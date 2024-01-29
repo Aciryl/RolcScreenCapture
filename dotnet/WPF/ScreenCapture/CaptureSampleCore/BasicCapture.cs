@@ -43,11 +43,15 @@ namespace CaptureSampleCore
         private SharpDX.Direct3D11.Device d3dDevice;
         private SharpDX.DXGI.SwapChain1 swapChain;
 
+        public ScreenShot ScreenShot { get; private set; }
+
         public BasicCapture(IDirect3DDevice d, GraphicsCaptureItem i)
         {
             item = i;
             device = d;
             d3dDevice = Direct3D11Helper.CreateSharpDXDevice(device);
+
+            ScreenShot = new ScreenShot();
 
             var dxgiFactory = new SharpDX.DXGI.Factory2();
             var description = new SharpDX.DXGI.SwapChainDescription1()
@@ -91,6 +95,7 @@ namespace CaptureSampleCore
 
         public void StartCapture()
         {
+            session.IsCursorCaptureEnabled = false;
             session.StartCapture();
         }
 
@@ -125,6 +130,7 @@ namespace CaptureSampleCore
                 using (var bitmap = Direct3D11Helper.CreateSharpDXTexture2D(frame.Surface))
                 {
                     d3dDevice.ImmediateContext.CopyResource(bitmap, backBuffer);
+                    ScreenShot.Update(bitmap);
                 }
 
             } // Retire the frame.

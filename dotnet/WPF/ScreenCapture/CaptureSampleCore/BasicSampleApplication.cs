@@ -25,6 +25,7 @@
 using Composition.WindowsRuntimeHelpers;
 using System;
 using System.Numerics;
+using Windows.ApplicationModel.Contacts;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.UI.Composition;
@@ -33,14 +34,16 @@ namespace CaptureSampleCore
 {
     public class BasicSampleApplication : IDisposable
     {
+        public const int ScreenCount = 3;
+
         private Compositor compositor;
         private ContainerVisual root;
 
-        private SpriteVisual content;
-        private CompositionSurfaceBrush brush;
+        private SpriteVisual[] contents = new SpriteVisual[ScreenCount];
+        private CompositionSurfaceBrush[] brushes = new CompositionSurfaceBrush[ScreenCount];
 
         private IDirect3DDevice device;
-        private BasicCapture capture;
+        private BasicCapture[] capture = new BasicCapture[ScreenCount];
 
         public BasicSampleApplication(Compositor c)
         {
@@ -52,51 +55,67 @@ namespace CaptureSampleCore
             root.RelativeSizeAdjustment = Vector2.One;
 
             // Setup the content.
-            brush = compositor.CreateSurfaceBrush();
-            brush.HorizontalAlignmentRatio = 0.5f;
-            brush.VerticalAlignmentRatio = 0.5f;
-            brush.Stretch = CompositionStretch.Uniform;
+            for (int i = 0; i < ScreenCount; i++)
+            {
+                brushes[i] = compositor.CreateSurfaceBrush();
+                brushes[i].HorizontalAlignmentRatio = 0.5f;
+                brushes[i].VerticalAlignmentRatio = 0.5f;
+                brushes[i].Stretch = CompositionStretch.Uniform;
+                brushes[i].Scale = new Vector2(0.5f, 0.5f);
 
-            var shadow = compositor.CreateDropShadow();
-            shadow.Mask = brush;
+                var shadow = compositor.CreateDropShadow();
+                shadow.Mask = brushes[i];
 
-            content = compositor.CreateSpriteVisual();
-            content.AnchorPoint = new Vector2(0.5f);
-            content.RelativeOffsetAdjustment = new Vector3(0.5f, 0.5f, 0);
-            content.RelativeSizeAdjustment = Vector2.One;
-            content.Size = new Vector2(-80, -80);
-            content.Brush = brush;
-            content.Shadow = shadow;
-            root.Children.InsertAtTop(content);
+
+                contents[i] = compositor.CreateSpriteVisual();
+                contents[i].AnchorPoint = new Vector2(i == 0 || i == 2 ? 0.5f + 0.02f : -0.02f,
+                                                      i == 0 || i == 1 ? 0.5f + 0.02f / 9 * 16 : -0.02f / 9 * 16);
+                contents[i].RelativeOffsetAdjustment = new Vector3(0.5f, 0.5f, 0);
+                contents[i].RelativeSizeAdjustment = Vector2.One;
+                contents[i].Size = new Vector2(-80, -80);
+                contents[i].Brush = brushes[i];
+                contents[i].Shadow = shadow;
+
+                root.Children.InsertAtTop(contents[i]);
+            }
         }
 
         public Visual Visual => root;
 
         public void Dispose()
         {
-            StopCapture();
+            for (int i = 0; i < ScreenCount; ++i)
+                StopCapture(i);
             compositor = null;
             root.Dispose();
-            content.Dispose();
-            brush.Dispose();
+            foreach (var content in contents)
+                content.Dispose();
+            foreach (var brush in brushes)
+                brush.Dispose();
             device.Dispose();
         }
 
-        public void StartCaptureFromItem(GraphicsCaptureItem item)
+        public void StartCaptureFromItem(GraphicsCaptureItem item, int i)
         {
-            StopCapture();
-            capture = new BasicCapture(device, item);
+            if (i < 0 || i >= ScreenCount)
+                throw new ArgumentOutOfRangeException(nameof(i));
 
-            var surface = capture.CreateSurface(compositor);
-            brush.Surface = surface;
+            StopCapture(i);
+            capture[i] = new BasicCapture(device, item);
 
-            capture.StartCapture();
+            var surface = capture[i].CreateSurface(compositor);
+            brushes[i].Surface = surface;
+
+            capture[i].StartCapture();
         }
 
-        public void StopCapture()
+        public void StopCapture(int i)
         {
-            capture?.Dispose();
-            brush.Surface = null;
+            if (i < 0 || i >= ScreenCount)
+                throw new ArgumentOutOfRangeException(nameof(i));
+
+            capture[i]?.Dispose();
+            brushes[i].Surface = null;
         }
     }
 }

@@ -43,22 +43,43 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <StackPanel Margin="10">
-                <Button x:Name="PickerButton" Content="Use Picker" Click="PickerButton_Click" Margin="10" />
-                <ComboBox x:Name="WindowComboBox" Margin="10" SelectionChanged="WindowComboBox_SelectionChanged">
+                <TextBlock Text="Main" />
+                <Button x:Name="PickerButton1" Content="Use Picker" Click="PickerButton1_Click" Margin="10" />
+                <ComboBox x:Name="WindowComboBox1" Margin="10" SelectionChanged="WindowComboBox1_SelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding MainWindowTitle}" />
+                            <TextBlock Text="{Binding Title}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <Button x:Name="PrimaryMonitorButton" Content="Use Primary Monitor" Click="PrimaryMonitorButton_Click" Margin="10" />
+                
+                <TextBlock Text="Sub1" />
+                <Button x:Name="PickerButton2" Content="Use Picker" Click="PickerButton2_Click" Margin="10" />
+                <ComboBox x:Name="WindowComboBox2" Margin="10" SelectionChanged="WindowComboBox2_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <TextBlock Text="Sub2" />
+                <Button x:Name="PickerButton3" Content="Use Picker" Click="PickerButton3_Click" Margin="10" />
+                <ComboBox x:Name="WindowComboBox3" Margin="10" SelectionChanged="WindowComboBox3_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <!--Button x:Name="PrimaryMonitorButton" Content="Use Primary Monitor" Click="PrimaryMonitorButton_Click" Margin="10" />
                 <ComboBox x:Name="MonitorComboBox" Margin="10" SelectionChanged="MonitorComboBox_SelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding DeviceName}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
-                </ComboBox>
+                </ComboBox-->
             </StackPanel>
             <Button x:Name="StopButton" Grid.Row="1" Content="Stop Capturing" Click="StopButton_Click" Margin="10" />
         </Grid>

@@ -50,7 +50,7 @@ namespace WPFCaptureSample
         private ContainerVisual root;
 
         private BasicSampleApplication sample;
-        private ObservableCollection<Process> processes;
+        private ObservableCollection<ComboBoxItem> processes;
         private ObservableCollection<MonitorInfo> monitors;
 
         public MainWindow()
@@ -61,22 +61,6 @@ namespace WPFCaptureSample
             // Force graphicscapture.dll to load.
             var picker = new GraphicsCapturePicker();
 #endif
-        }
-
-        private async void PickerButton_Click(object sender, RoutedEventArgs e)
-        {
-            StopCapture();
-            WindowComboBox.SelectedIndex = -1;
-            MonitorComboBox.SelectedIndex = -1;
-            await StartPickerCaptureAsync();
-        }
-
-        private void PrimaryMonitorButton_Click(object sender, RoutedEventArgs e)
-        {
-            StopCapture();
-            WindowComboBox.SelectedIndex = -1;
-            MonitorComboBox.SelectedIndex = -1;
-            StartPrimaryMonitorCapture();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -96,39 +80,84 @@ namespace WPFCaptureSample
 
             InitComposition(controlsWidth);
             InitWindowList();
-            InitMonitorList();
+            //InitMonitorList();
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
+            for (int i = 0; i < BasicSampleApplication.ScreenCount; ++i)
+                StopCapture(i);
+            WindowComboBox1.SelectedIndex = -1;
+            WindowComboBox2.SelectedIndex = -1;
+            WindowComboBox3.SelectedIndex = -1;
+            //MonitorComboBox.SelectedIndex = -1;
+        }
+
+        private void PickerButton1_Click(object sender, RoutedEventArgs e)
+            => PickerButton_Click(sender, e, 0);
+
+        private void PickerButton2_Click(object sender, RoutedEventArgs e)
+            => PickerButton_Click(sender, e, 1);
+
+        private void PickerButton3_Click(object sender, RoutedEventArgs e)
+            => PickerButton_Click(sender, e, 2);
+
+        private async void PickerButton_Click(object sender, RoutedEventArgs e, int i)
+        {
+            StopCapture(i);
+
+            if (i == 0)
+                WindowComboBox1.SelectedIndex = -1;
+            else if (i == 1)
+                WindowComboBox2.SelectedIndex = -1;
+            else if (i == 2)
+                WindowComboBox3.SelectedIndex = -1;
+
+            //MonitorComboBox.SelectedIndex = -1;
+            await StartPickerCaptureAsync(i);
+        }
+        /*
+        private void PrimaryMonitorButton_Click(object sender, RoutedEventArgs e)
+        {
             StopCapture();
             WindowComboBox.SelectedIndex = -1;
             MonitorComboBox.SelectedIndex = -1;
-        }
+            StartPrimaryMonitorCapture();
+        }*/
 
-        private void WindowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void WindowComboBox1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            => WindowComboBox_SelectionChanged(sender, e, 0);
+
+        private void WindowComboBox2_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            => WindowComboBox_SelectionChanged(sender, e, 1);
+
+        private void WindowComboBox3_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            => WindowComboBox_SelectionChanged(sender, e, 2);
+
+        private void WindowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e, int i)
         {
             var comboBox = (ComboBox)sender;
-            var process = (Process)comboBox.SelectedItem;
+            var selectedItem = (ComboBoxItem)comboBox.SelectedItem;
+            var process = selectedItem.Process;
 
             if (process != null)
             {
-                StopCapture();
-                MonitorComboBox.SelectedIndex = -1;
+                StopCapture(i);
+                //MonitorComboBox.SelectedIndex = -1;
                 var hwnd = process.MainWindowHandle;
                 try
                 {
-                    StartHwndCapture(hwnd);
+                    StartHwndCapture(hwnd, i);
                 }
                 catch (Exception)
                 {
                     Debug.WriteLine($"Hwnd 0x{hwnd.ToInt32():X8} is not valid for capture!");
-                    processes.Remove(process);
+                    processes.Remove(selectedItem);
                     comboBox.SelectedIndex = -1;
                 }
             }
         }
-
+        /*
         private void MonitorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var comboBox = (ComboBox)sender;
@@ -150,7 +179,7 @@ namespace WPFCaptureSample
                     comboBox.SelectedIndex = -1;
                 }
             }
-        }
+        }*/
 
         private void InitComposition(float controlsWidth)
         {
@@ -166,10 +195,23 @@ namespace WPFCaptureSample
             root.Size = new Vector2(-controlsWidth, 0);
             root.Offset = new Vector3(controlsWidth, 0, 0);
             target.Root = root;
+            
 
             // Setup the rest of the sample application.
             sample = new BasicSampleApplication(compositor);
             root.Children.InsertAtTop(sample.Visual);
+        }
+
+        public class ComboBoxItem
+        {
+            public Process Process { get; set; }
+            public string Title { get; set; }
+
+            public ComboBoxItem(Process p, string title)
+            {
+                Process = p;
+                Title = title;
+            }
         }
 
         private void InitWindowList()
@@ -178,16 +220,21 @@ namespace WPFCaptureSample
             {
                 var processesWithWindows = from p in Process.GetProcesses()
                                            where !string.IsNullOrWhiteSpace(p.MainWindowTitle) && WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)
-                                           select p;
-                processes = new ObservableCollection<Process>(processesWithWindows);
-                WindowComboBox.ItemsSource = processes;
+                                           where p.MainWindowTitle.Contains("The Ruins Of The Lost Kingdom CHRONICLE")
+                                           select new ComboBoxItem(p, $"{p.MainWindowTitle}{Environment.NewLine}{p.MainModule.FileName}");
+                processes = new ObservableCollection<ComboBoxItem>(processesWithWindows);
+                WindowComboBox1.ItemsSource = processes;
+                WindowComboBox2.ItemsSource = processes;
+                WindowComboBox3.ItemsSource = processes;
             }
             else
             {
-                WindowComboBox.IsEnabled = false;
+                WindowComboBox1.IsEnabled = false;
+                WindowComboBox2.IsEnabled = false;
+                WindowComboBox3.IsEnabled = false;
             }
         }
-
+        /*
         private void InitMonitorList()
         {
             if (ApiInformation.IsApiContractPresent(typeof(Windows.Foundation.UniversalApiContract).FullName, 8))
@@ -200,9 +247,9 @@ namespace WPFCaptureSample
                 MonitorComboBox.IsEnabled = false;
                 PrimaryMonitorButton.IsEnabled = false;
             }
-        }
+        }*/
 
-        private async Task StartPickerCaptureAsync()
+        private async Task StartPickerCaptureAsync(int i)
         {
             var picker = new GraphicsCapturePicker();
             picker.SetWindow(hwnd);
@@ -210,19 +257,19 @@ namespace WPFCaptureSample
 
             if (item != null)
             {
-                sample.StartCaptureFromItem(item);
+                sample.StartCaptureFromItem(item, i);
             }
         }
 
-        private void StartHwndCapture(IntPtr hwnd)
+        private void StartHwndCapture(IntPtr hwnd, int i)
         {
             GraphicsCaptureItem item = CaptureHelper.CreateItemForWindow(hwnd);
             if (item != null)
             {
-                sample.StartCaptureFromItem(item);
+                sample.StartCaptureFromItem(item, i);
             }
         }
-
+        /*
         private void StartHmonCapture(IntPtr hmon)
         {
             GraphicsCaptureItem item = CaptureHelper.CreateItemForMonitor(hmon);
@@ -230,19 +277,19 @@ namespace WPFCaptureSample
             {
                 sample.StartCaptureFromItem(item);
             }
-        }
-
+        }*/
+        /*
         private void StartPrimaryMonitorCapture()
         {
             MonitorInfo monitor = (from m in MonitorEnumerationHelper.GetMonitors()
                            where m.IsPrimary
                            select m).First();
             StartHmonCapture(monitor.Hmon);
-        }
+        }*/
 
-        private void StopCapture()
+        private void StopCapture(int i)
         {
-            sample.StopCapture();
+            sample.StopCapture(i);
         }
     }
 }
