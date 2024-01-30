@@ -43,7 +43,7 @@ namespace CaptureSampleCore
         private CompositionSurfaceBrush[] brushes = new CompositionSurfaceBrush[ScreenCount];
 
         private IDirect3DDevice device;
-        private BasicCapture[] capture = new BasicCapture[ScreenCount];
+        public BasicCapture[] Capture { get; private set; } = new BasicCapture[ScreenCount];
 
         public BasicSampleApplication(Compositor c)
         {
@@ -101,12 +101,12 @@ namespace CaptureSampleCore
                 throw new ArgumentOutOfRangeException(nameof(i));
 
             StopCapture(i);
-            capture[i] = new BasicCapture(device, item);
+            Capture[i] = new BasicCapture(device, item);
 
-            var surface = capture[i].CreateSurface(compositor);
+            var surface = Capture[i].CreateSurface(compositor);
             brushes[i].Surface = surface;
 
-            capture[i].StartCapture();
+            Capture[i].StartCapture();
         }
 
         public void StopCapture(int i)
@@ -114,7 +114,7 @@ namespace CaptureSampleCore
             if (i < 0 || i >= ScreenCount)
                 throw new ArgumentOutOfRangeException(nameof(i));
 
-            capture[i]?.Dispose();
+            Capture[i]?.Dispose();
             brushes[i].Surface = null;
         }
     }

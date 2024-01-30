@@ -24,6 +24,7 @@
 
 using CaptureSampleCore;
 using Composition.WindowsRuntimeHelpers;
+using SharpDX.Direct3D;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -36,6 +37,9 @@ using System.Windows.Interop;
 using Windows.Foundation.Metadata;
 using Windows.Graphics.Capture;
 using Windows.UI.Composition;
+using Macro;
+using System.Windows.Threading;
+using System.Threading;
 
 namespace WPFCaptureSample
 {
@@ -52,6 +56,8 @@ namespace WPFCaptureSample
         private BasicSampleApplication sample;
         private ObservableCollection<ComboBoxItem> processes;
         private ObservableCollection<MonitorInfo> monitors;
+
+        private WindowActivator wa;
 
         public MainWindow()
         {
@@ -81,6 +87,9 @@ namespace WPFCaptureSample
             InitComposition(controlsWidth);
             InitWindowList();
             //InitMonitorList();
+
+            // WindowActivation
+            wa = new WindowActivator(BasicSampleApplication.ScreenCount);
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
@@ -92,7 +101,7 @@ namespace WPFCaptureSample
             WindowComboBox3.SelectedIndex = -1;
             //MonitorComboBox.SelectedIndex = -1;
         }
-
+        /*
         private void PickerButton1_Click(object sender, RoutedEventArgs e)
             => PickerButton_Click(sender, e, 0);
 
@@ -115,7 +124,7 @@ namespace WPFCaptureSample
 
             //MonitorComboBox.SelectedIndex = -1;
             await StartPickerCaptureAsync(i);
-        }
+        }*/
         /*
         private void PrimaryMonitorButton_Click(object sender, RoutedEventArgs e)
         {
@@ -138,7 +147,8 @@ namespace WPFCaptureSample
         {
             var comboBox = (ComboBox)sender;
             var selectedItem = (ComboBoxItem)comboBox.SelectedItem;
-            var process = selectedItem.Process;
+
+            var process = selectedItem?.Process;
 
             if (process != null)
             {
@@ -157,6 +167,20 @@ namespace WPFCaptureSample
                 }
             }
         }
+
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshButton.IsEnabled = false;
+            Thread.Sleep(50);
+
+            Action emptyDelegate = delegate { };
+            RefreshButton.Dispatcher.Invoke(emptyDelegate, DispatcherPriority.Render);
+
+            InitWindowList();
+
+            RefreshButton.IsEnabled = true;
+        }
+
         /*
         private void MonitorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -248,21 +272,24 @@ namespace WPFCaptureSample
                 PrimaryMonitorButton.IsEnabled = false;
             }
         }*/
-
+        /*
         private async Task StartPickerCaptureAsync(int i)
         {
             var picker = new GraphicsCapturePicker();
             picker.SetWindow(hwnd);
+
             GraphicsCaptureItem item = await picker.PickSingleItemAsync();
 
             if (item != null)
             {
                 sample.StartCaptureFromItem(item, i);
             }
-        }
+        }*/
 
         private void StartHwndCapture(IntPtr hwnd, int i)
         {
+            wa.Hwnds[i] = hwnd;
+
             GraphicsCaptureItem item = CaptureHelper.CreateItemForWindow(hwnd);
             if (item != null)
             {

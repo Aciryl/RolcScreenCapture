@@ -93,9 +93,12 @@ namespace CaptureSampleCore
             d3dDevice?.Dispose();
         }
 
+        //public async void StartCapture()
         public void StartCapture()
         {
+            //await GraphicsCaptureAccess.RequestAccessAsync(GraphicsCaptureAccessKind.Borderless);
             session.IsCursorCaptureEnabled = false;
+            //session.IsBorderRequired = false;
             session.StartCapture();
         }
 
