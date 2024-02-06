@@ -40,6 +40,9 @@ using Windows.UI.Composition;
 using Macro;
 using System.Windows.Threading;
 using System.Threading;
+using System.Collections.Generic;
+using WindowsInput.Native;
+using Macro.Maq;
 
 namespace WPFCaptureSample
 {
@@ -58,6 +61,10 @@ namespace WPFCaptureSample
         private ObservableCollection<MonitorInfo> monitors;
 
         private WindowActivator wa;
+        private SubCharacterKeyMapping sub1;
+        private SubCharacterKeyMapping sub2;
+
+        private Dictionary<Key, VirtualKeyCode>[] KeyLists { get; } = new Dictionary<Key, VirtualKeyCode>[BasicSampleApplication.ScreenCount];
 
         public MainWindow()
         {
@@ -67,6 +74,54 @@ namespace WPFCaptureSample
             // Force graphicscapture.dll to load.
             var picker = new GraphicsCapturePicker();
 #endif
+
+            KeyLists[0] = new Dictionary<Key, VirtualKeyCode>()
+            {
+                { Key.Left, VirtualKeyCode.LEFT },
+                { Key.Up, VirtualKeyCode.UP },
+                { Key.Right, VirtualKeyCode.RIGHT },
+                { Key.Down, VirtualKeyCode.DOWN },
+                { Key.A, VirtualKeyCode.VK_A },
+                { Key.S, VirtualKeyCode.VK_S },
+                { Key.Z, VirtualKeyCode.VK_Z },
+                { Key.X, VirtualKeyCode.VK_X },
+                { Key.C, VirtualKeyCode.VK_C },
+                { Key.V, VirtualKeyCode.VK_V },
+            };
+
+            KeyLists[1] = new Dictionary<Key, VirtualKeyCode>()
+            {
+                { Key.Left, VirtualKeyCode.VK_F },
+                { Key.Up, VirtualKeyCode.VK_T },
+                { Key.Right, VirtualKeyCode.VK_H },
+                { Key.Down, VirtualKeyCode.VK_G },
+                { Key.A, VirtualKeyCode.VK_1 },
+                { Key.S, VirtualKeyCode.VK_2 },
+                { Key.Z, VirtualKeyCode.VK_Q },
+                { Key.X, VirtualKeyCode.VK_W },
+                { Key.C, VirtualKeyCode.VK_E },
+                { Key.V, VirtualKeyCode.VK_R },
+            };
+
+            KeyLists[2] = new Dictionary<Key, VirtualKeyCode>()
+            {
+                { Key.Left, VirtualKeyCode.VK_L },
+                { Key.Up, VirtualKeyCode.VK_P },
+                { Key.Right, VirtualKeyCode.OEM_7 },
+                { Key.Down, VirtualKeyCode.OEM_1 },
+                { Key.A, VirtualKeyCode.VK_6 },
+                { Key.S, VirtualKeyCode.VK_7 },
+                { Key.Z, VirtualKeyCode.VK_Y },
+                { Key.X, VirtualKeyCode.VK_U },
+                { Key.C, VirtualKeyCode.VK_I },
+                { Key.V, VirtualKeyCode.VK_O },
+            };
+
+            sub1 = new SubCharacterKeyMapping(KeyLists[1]);
+            sub2 = new SubCharacterKeyMapping(KeyLists[2]);
+
+            sub1.MappingStart();
+            sub2.MappingStart();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -168,6 +223,18 @@ namespace WPFCaptureSample
             }
         }
 
+        private void MappingStart_Click(object sender, RoutedEventArgs e)
+        {
+            sub1.MappingStart();
+            sub2.MappingStart();
+        }
+
+        private void MappingStop_Click(object sender, RoutedEventArgs e)
+        {
+            sub1.MappingStop();
+            sub2.MappingStop();
+        }
+
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             RefreshButton.IsEnabled = false;
@@ -244,7 +311,8 @@ namespace WPFCaptureSample
             {
                 var processesWithWindows = from p in Process.GetProcesses()
                                            where !string.IsNullOrWhiteSpace(p.MainWindowTitle) && WindowEnumerationHelper.IsWindowValidForCapture(p.MainWindowHandle)
-                                           where p.MainWindowTitle.Contains("The Ruins Of The Lost Kingdom CHRONICLE")
+                                           where p.MainWindowTitle.Equals("The Ruins Of The Lost Kingdom CHRONICLE") ||
+                                                 p.MainWindowTitle.Equals("[#] The Ruins Of The Lost Kingdom CHRONICLE [#]")
                                            select new ComboBoxItem(p, $"{p.MainWindowTitle}{Environment.NewLine}{p.MainModule.FileName}");
                 processes = new ObservableCollection<ComboBoxItem>(processesWithWindows);
                 WindowComboBox1.ItemsSource = processes;
@@ -289,6 +357,10 @@ namespace WPFCaptureSample
         private void StartHwndCapture(IntPtr hwnd, int i)
         {
             wa.Hwnds[i] = hwnd;
+            if (i == 1)
+                sub1.SetHwnd(hwnd);
+            if (i == 2)
+                sub2.SetHwnd(hwnd);
 
             GraphicsCaptureItem item = CaptureHelper.CreateItemForWindow(hwnd);
             if (item != null)
@@ -317,6 +389,33 @@ namespace WPFCaptureSample
         private void StopCapture(int i)
         {
             sample.StopCapture(i);
+        }
+
+        private void MacroStartButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (wa.Hwnds?[0] != null &&
+                wa.Hwnds?[1] != null &&
+                wa.Hwnds?[2] != null)
+            {
+                var hwnds = new[] { wa.Hwnds[0].Value, wa.Hwnds[1].Value, wa.Hwnds[2].Value };
+                var keyLists = new[] { KeyLists[0], KeyLists[1], KeyLists[2] };
+                var helper = new WindowInteropHelper(this);
+
+                var macro = new Macro.Maq.Manager(helper.Handle, hwnds, keyLists, MappingStart, MappingStop, sample.Capture.Select(x => x.ScreenShot).ToArray());
+                macro.Start();
+            }
+
+            void MappingStart()
+            {
+                sub1.MappingStart();
+                sub2.MappingStart();
+            }
+
+            void MappingStop()
+            {
+                sub1.MappingStop();
+                sub2.MappingStop();
+            }
         }
     }
 }

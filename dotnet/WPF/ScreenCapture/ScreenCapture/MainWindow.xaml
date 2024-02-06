@@ -29,7 +29,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFCaptureSample"
         mc:Ignorable="d"
-        Title="WPF Capture Sample" Height="450" Width="800"
+        Title="WPF Capture Sample" Height="900" Width="1600"
         Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -45,7 +45,7 @@
             <StackPanel Margin="10">
                 <TextBlock Text="Main" />
                 <!--Button x:Name="PickerButton1" Content="Use Picker" Click="PickerButton1_Click" Margin="10" /-->
-                <ComboBox x:Name="WindowComboBox1" Margin="10" SelectionChanged="WindowComboBox1_SelectionChanged">
+                <ComboBox x:Name="WindowComboBox1" Margin="10" SelectionChanged="WindowComboBox1_SelectionChanged" Focusable="False">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Title}" />
@@ -55,7 +55,7 @@
                 
                 <TextBlock Text="Sub1" />
                 <!--Button x:Name="PickerButton2" Content="Use Picker" Click="PickerButton2_Click" Margin="10" /-->
-                <ComboBox x:Name="WindowComboBox2" Margin="10" SelectionChanged="WindowComboBox2_SelectionChanged">
+                <ComboBox x:Name="WindowComboBox2" Margin="10" SelectionChanged="WindowComboBox2_SelectionChanged" Focusable="False">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Title}" />
@@ -65,7 +65,7 @@
 
                 <TextBlock Text="Sub2" />
                 <!--Button x:Name="PickerButton3" Content="Use Picker" Click="PickerButton3_Click" Margin="10" /-->
-                <ComboBox x:Name="WindowComboBox3" Margin="10" SelectionChanged="WindowComboBox3_SelectionChanged">
+                <ComboBox x:Name="WindowComboBox3" Margin="10" SelectionChanged="WindowComboBox3_SelectionChanged" Focusable="False">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Title}" />
@@ -83,8 +83,11 @@
             </StackPanel>
 
             <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10">
-                <Button x:Name="RefreshButton"  Content="Refresh Windows" Click="RefreshButton_Click"  Margin="10" />
-                <Button x:Name="StopButton" Content="Stop Capturing" Click="StopButton_Click" Margin="10" />
+                <Button x:Name="MappingStart" Content="Mapping Start" Click="MappingStart_Click" Margin="10" Focusable="False" />
+                <Button x:Name="MappingStop" Content="Mapping Stop" Click="MappingStop_Click"  Margin="10" Focusable="False" />
+                <Button x:Name="MacroStartButton" Content="Macro Start" Click="MacroStartButton_Click" Margin="10" Focusable="False" />
+                <Button x:Name="RefreshButton"  Content="Refresh Windows" Click="RefreshButton_Click"  Margin="10" Focusable="False" />
+                <Button x:Name="StopButton" Content="Stop Capturing" Click="StopButton_Click" Margin="10" Focusable="False" />
             </StackPanel>
         </Grid>
 

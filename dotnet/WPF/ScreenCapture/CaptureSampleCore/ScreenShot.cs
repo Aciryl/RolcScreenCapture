@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using Windows.ApplicationModel.AppExtensions;
 using Windows.UI.Xaml.Controls;
 
 namespace CaptureSampleCore
@@ -14,39 +15,43 @@ namespace CaptureSampleCore
     public class ScreenShot
     {
         private const int Top = 26;
-        private const int Left = 3;
-        private const int Right = 3;
-        private const int Bottom = 3;
+        private const int Left = 1;
+        private const int Right = 1;
+        private const int Bottom = 1;
 
         private byte[] colors;
-        private int textureWidth;
-        private int textureHeight;
-        private int clientWidth;
-        private int clientHeight;
+        public int TextureWidth { get; private set; }
+        public int TextureHeight { get; private set; }
+        public int ClientWidth { get; private set; }
+        public int ClientHeight { get; private set; }
+
+        public delegate void UpdateEventHandler();
+        public event UpdateEventHandler UpdateEvent;
 
         public void Update(Texture2D texture)
         {
-            textureWidth = Get64Width(texture.Description.Width);
-            textureHeight = texture.Description.Height;
-            clientWidth = textureWidth - Left - Right;
-            clientHeight = textureHeight - Top - Bottom;
+            TextureWidth = Get64Width(texture.Description.Width);
+            TextureHeight = texture.Description.Height;
+            ClientWidth = texture.Description.Width - Left - Right;
+            ClientHeight = TextureHeight - Top - Bottom;
             colors = GetColorDataFromTexture(texture);
+            UpdateEvent?.Invoke();
         }
 
         public (byte r, byte g, byte b, byte a) GetPixels(int x, int y)
         {
             var index = GetIndex(x, y);
-            return (colors[index + 0],
+            return (colors[index + 2],
                     colors[index + 1],
-                    colors[index + 2],
+                    colors[index + 0],
                     colors[index + 3]);
         }
 
         public void Save(string filename, Func<(byte r, byte g, byte b, byte a), (byte r, byte g, byte b, byte a)> func = null)
         {
-            var pixels = new byte[clientWidth * clientHeight * 4];
+            var pixels = new byte[ClientWidth * ClientHeight * 4];
 
-            using (var img = new Bitmap(clientWidth, clientHeight, PixelFormat.Format32bppArgb))
+            using (var img = new Bitmap(ClientWidth, ClientHeight, PixelFormat.Format32bppArgb))
             {
                 //Bitmapをロックする
                 BitmapData bmpData = img.LockBits(
@@ -58,20 +63,23 @@ namespace CaptureSampleCore
 
                 // データを加工する
                 var index2 = 0;
-                for (int y = Top; y < textureHeight - Bottom; ++y)
+                //for (int y = Top; y < textureHeight - Bottom; ++y)
+                for (int y = 0; y < ClientHeight; ++y)
                 {
-                    for (int x = Left; x < textureWidth - Right; ++x)
+                    //for (int x = Left; x < textureWidth - Right; ++x)
+                    for (int x = 0; x < ClientWidth; ++x)
                     {
-                        var index = (y * textureWidth + x) * 4;
+                        //var index = (y * textureWidth + x) * 4;
+                        var index = GetIndex(x, y);
                         var b = colors[index + 0];
                         var g = colors[index + 1];
                         var r = colors[index + 2];
                         var a = colors[index + 3];
 
                         (byte pr, byte pg, byte pb, byte pa) = func?.Invoke((r, g, b, a)) ?? (r, g, b, a);
-                        pixels[index2 + 0] = pr;
+                        pixels[index2 + 0] = pb;
                         pixels[index2 + 1] = pg;
-                        pixels[index2 + 2] = pb;
+                        pixels[index2 + 2] = pr;
                         pixels[index2 + 3] = pa;
 
                         index2 += 4;
@@ -90,12 +98,12 @@ namespace CaptureSampleCore
 
         private int GetIndex(int x, int y)
         {
-            if (x < 0 || x >= clientWidth)
+            if (x < 0 || x >= ClientWidth)
                 throw new ArgumentOutOfRangeException(nameof(x));
-            if (y < 0 || y >= clientHeight)
+            if (y < 0 || y >= ClientHeight)
                 throw new ArgumentOutOfRangeException(nameof(y));
 
-            return ((y + Top) * textureWidth + (x + Left)) * 4;
+            return ((y + Top) * TextureWidth + (x + Left)) * 4;
         }
 
         private byte[] GetColorDataFromTexture(Texture2D texture)
@@ -103,8 +111,8 @@ namespace CaptureSampleCore
             // Create our staging texture
             var description = new Texture2DDescription
             {
-                Width = textureWidth,
-                Height = textureHeight,
+                Width = texture.Description.Width,
+                Height = texture.Description.Height,
                 MipLevels = 1,
                 ArraySize = 1,
                 Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
@@ -135,8 +143,8 @@ namespace CaptureSampleCore
                     MapFlags.None);
 
                 // カラーデータを取得
-                int width = textureWidth;
-                int height = textureHeight;
+                int width = TextureWidth;
+                int height = TextureHeight;
                 int pitch = dataBox.RowPitch;
 
                 // カラーデータを格納する配列
