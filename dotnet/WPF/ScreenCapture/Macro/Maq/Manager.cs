@@ -34,7 +34,7 @@ namespace Macro.Maq
         private const double KurumiRF = 6;
         private const double KurumiLF = 9;
 
-        private const double AliceRF = 5;
+        private const double AliceRF = 7;
         private const double AliceLF = 7;
 
         public Manager(IntPtr mainWindowHandle, IntPtr[] hwnds, Dictionary<Key, VirtualKeyCode>[] keyLists, Action mappingStart, Action mappingStop, ScreenShot[] screenShot)
@@ -43,9 +43,9 @@ namespace Macro.Maq
             if ((hwnds?.Length ?? 0) != 3 || (keyLists?.Length ?? 0) != 3 || (screenShot?.Length ?? 0) != 3)
                 throw new ArgumentException("キャラクターの人数が違います。このマクロにはキャラクターが 3 人必要です");
 
-            AddMacro(new Lyrica(hwnds[0], keyLists[0], GetLyricaState, SetLyricaState, SetLyricaMessage, screenShot[0], LyricaLF, LyricaRF, this));
-            AddMacro(new Kurumi(hwnds[1], keyLists[1], GetKurumiState, SetKurumiState, SetKurumiMessage, screenShot[1], KurumiLF, KurumiRF, this));
-            AddMacro(new Alice(hwnds[2], keyLists[2], GetAliceState, SetAliceState, SetAliceMessage, screenShot[2], AliceLF, AliceRF, this));
+            AddMacro(new Lyrica(hwnds[0], keyLists[0], GetLyricaState, SetLyricaState, SetLyricaMessage, screenShot[0], LyricaLF, LyricaRF, this, 0));
+            AddMacro(new Kurumi(hwnds[1], keyLists[1], GetKurumiState, SetKurumiState, SetKurumiMessage, screenShot[1], KurumiLF, KurumiRF, this, 1));
+            AddMacro(new Alice(hwnds[2], keyLists[2], GetAliceState, SetAliceState, SetAliceMessage, screenShot[2], AliceLF, AliceRF, this, 2));
 
             States GetLyricaState()
             {

@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions.cs" />
+    <Compile Include="DictionarySerializer.cs" />
     <Compile Include="Macro.cs" />
     <Compile Include="MacroManager.cs" />
     <Compile Include="Maq\Alice.cs" />
@@ -65,6 +66,14 @@
   <ItemGroup>
     <PackageReference Include="InputSimulator">
       <Version>1.0.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+      <Version>8.0.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="ReactiveProperty">
+      <Version>9.4.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

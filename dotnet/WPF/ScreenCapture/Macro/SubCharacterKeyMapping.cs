@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Utils;
+using Windows.Management.Update;
 using WindowsInput;
 using WindowsInput.Native;
 
@@ -77,10 +78,21 @@ namespace Macro
             }
         }
 
+        private IntPtr prevHwnd;
         private void SendKey(Key key, KeyboardUpDown upDown)
         {
-            if (WindowUtil.GetActiveWindowHandle() != Hwnd)
+            var handle = WindowUtil.GetActiveWindowHandle();
+            if (handle != Hwnd)
+            {
+                if (prevHwnd == Hwnd)
+                {
+                    foreach (var key2 in KeyList.Values)
+                        Sim.Keyboard.KeyUp(key2);
+                }
+                prevHwnd = handle;
                 return;
+            }
+            prevHwnd = handle;
 
             if (upDown is KeyboardUpDown.Down)
                 Sim.Keyboard.KeyDown(KeyList[key]);

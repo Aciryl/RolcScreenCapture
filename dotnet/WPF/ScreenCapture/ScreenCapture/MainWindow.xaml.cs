@@ -43,13 +43,20 @@ using System.Threading;
 using System.Collections.Generic;
 using WindowsInput.Native;
 using Macro.Maq;
+using MahApps.Metro.Controls;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using System.IO;
+using Microsoft.Win32;
+using System.Text.RegularExpressions;
+using System.Windows.Media.Media3D;
+using Reactive.Bindings;
 
 namespace WPFCaptureSample
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : MetroWindow
     {
         private IntPtr hwnd;
         private Compositor compositor;
@@ -69,6 +76,8 @@ namespace WPFCaptureSample
         public MainWindow()
         {
             InitializeComponent();
+
+            DataContext = new MainWindowViewModel();
 
 #if DEBUG
             // Force graphicscapture.dll to load.
@@ -145,6 +154,13 @@ namespace WPFCaptureSample
 
             // WindowActivation
             wa = new WindowActivator(BasicSampleApplication.ScreenCount);
+
+            if (WindowComboBox1.Items.Count >= 1)
+                WindowComboBox1.SelectedItem = WindowComboBox1.Items[0];
+            if (WindowComboBox2.Items.Count >= 2)
+                WindowComboBox2.SelectedItem = WindowComboBox2.Items[1];
+            if (WindowComboBox3.Items.Count >= 3)
+                WindowComboBox3.SelectedItem = WindowComboBox3.Items[2];
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
@@ -235,7 +251,7 @@ namespace WPFCaptureSample
             sub2.MappingStop();
         }
 
-        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             RefreshButton.IsEnabled = false;
             Thread.Sleep(50);
@@ -314,6 +330,7 @@ namespace WPFCaptureSample
                                            where p.MainWindowTitle.Equals("The Ruins Of The Lost Kingdom CHRONICLE") ||
                                                  p.MainWindowTitle.Equals("[#] The Ruins Of The Lost Kingdom CHRONICLE [#]")
                                            select new ComboBoxItem(p, $"{p.MainWindowTitle}{Environment.NewLine}{p.MainModule.FileName}");
+                processesWithWindows = processesWithWindows.OrderBy(x => x.Process.MainModule.FileName.Replace("_", ""));
                 processes = new ObservableCollection<ComboBoxItem>(processesWithWindows);
                 WindowComboBox1.ItemsSource = processes;
                 WindowComboBox2.ItemsSource = processes;
@@ -391,8 +408,12 @@ namespace WPFCaptureSample
             sample.StopCapture(i);
         }
 
-        private void MacroStartButton_Click(object sender, RoutedEventArgs e)
+        private MacroManager MacroManager { get; set; }
+        private void MaqMacroButton_Checked(object sender, RoutedEventArgs e)
         {
+            if (MacroManager != null)
+                return;
+
             if (wa.Hwnds?[0] != null &&
                 wa.Hwnds?[1] != null &&
                 wa.Hwnds?[2] != null)
@@ -401,21 +422,138 @@ namespace WPFCaptureSample
                 var keyLists = new[] { KeyLists[0], KeyLists[1], KeyLists[2] };
                 var helper = new WindowInteropHelper(this);
 
-                var macro = new Macro.Maq.Manager(helper.Handle, hwnds, keyLists, MappingStart, MappingStop, sample.Capture.Select(x => x.ScreenShot).ToArray());
-                macro.Start();
-            }
+                MacroManager = new Macro.Maq.Manager(helper.Handle, hwnds, keyLists, MappingStart, MappingStop, sample.Capture.Select(x => x.ScreenShot).ToArray());
+                MacroManager.Start();
 
-            void MappingStart()
-            {
-                sub1.MappingStart();
-                sub2.MappingStart();
-            }
+                void MappingStart()
+                {
+                    sub1.MappingStart();
+                    sub2.MappingStart();
+                    MacroManager = null;
+                    MaqMacroButton.IsChecked = false;
+                }
 
-            void MappingStop()
-            {
-                sub1.MappingStop();
-                sub2.MappingStop();
+                void MappingStop()
+                {
+                    sub1.MappingStop();
+                    sub2.MappingStop();
+                }
             }
+        }
+
+        private void MaqMacroButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (MacroManager != null)
+            {
+                MacroManager.IsCanceled = true;
+                MacroManager.HasError = true;
+                MacroManager = null;
+            }
+        }
+
+        private void SelectFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var browser = new CommonOpenFileDialog();
+
+            browser.Title = "フォルダーを選択してください";
+            browser.IsFolderPicker = true;
+#if DEBUG
+            browser.DefaultDirectory = Path.Combine("../", "../", "../", Directory.GetCurrentDirectory(), "ItemImages");
+#else
+            browser.DefaultDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ItemImages");
+#endif
+            browser.RestoreDirectory = true;
+
+            if (browser.ShowDialog() == CommonFileDialogResult.Ok)
+                ScreenShotFolderName.Text = browser.FileName;
+        }
+
+        private void SaveScreenShot_Click(object sender, RoutedEventArgs e)
+        {
+            if (sample.Capture.Length == 0)
+                return;
+
+            if (string.IsNullOrEmpty(ItemName.Text))
+                return;
+
+            if (string.IsNullOrEmpty(ScreenShotFolderName.Text))
+                return;
+
+            if (!(ScreenShotFree.IsChecked ?? false) &&
+                !(ScreenShotShare.IsChecked ?? false) &&
+                !(ScreenShotShield.IsChecked ?? false) &&
+                !(ScreenShotShareShield.IsChecked ?? false))
+                return;
+
+            if (sample.Capture.Length >= 1)
+                SaveScreenShot_Do(0);
+            if (sample.Capture.Length >= 2)
+                SaveScreenShot_Do(1);
+            if (sample.Capture.Length >= 3)
+                SaveScreenShot_Do(2);
+        }
+
+        private void LoadScreenShot_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            openFileDialog.Filter = "Image file (*.png)|*.png|All file (*.*)|*.*";
+            openFileDialog.RestoreDirectory = true;
+            openFileDialog.Title = "ファイルを選択してください";
+            openFileDialog.Multiselect = true;
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                var vecs = Macro.Macro.LoadDataFromImage(openFileDialog.FileNames);
+
+                for (int i = 0; i < openFileDialog.FileNames.Length; ++i)
+                {
+                    var filename = openFileDialog.FileNames[i];
+                    var vec = vecs[i];
+
+                    var itemName = Regex.Match(Path.GetFileName(filename), "(.+)_\\d.png").Result("$1");
+                    var vm = DataContext as MainWindowViewModel;
+                    vm?.AddItem(itemName, sample.Capture, vec);
+                }
+            }
+        }
+
+        private void SaveScreenShot_Do(int i)
+        {
+            var screenShot = sample.Capture[i].ScreenShot;
+
+            var colors = new List<(byte r, byte g, byte b, byte a)>();
+
+            if (ScreenShotFree.IsChecked ?? false)
+                colors.Add((0xff, 0xff, 0xff, 0xff));
+            if (ScreenShotShare.IsChecked ?? false)
+                colors.Add((0x40, 0xc0, 0xff, 0xff));
+            if (ScreenShotShield.IsChecked ?? false)
+                colors.Add((0xc0, 0xff, 0x40, 0xff));
+            if (ScreenShotShareShield.IsChecked ?? false)
+                colors.Add((0x40, 0xff, 0xc0, 0xff));
+
+            Func<(byte, byte, byte, byte), (byte, byte, byte, byte)> func = ((byte, byte, byte, byte) tuple) =>
+            {
+                var (r, g, b, a) = tuple;
+                
+                foreach (var (rr, gg, bb, aa) in colors)
+                {
+                    if (Near(r, rr) && Near(g, gg) && Near(b, bb) && Near(a, aa))
+                    {
+                        return (r, g, b, a);
+                    }
+                }
+
+                return (0, 0, 0, 255);
+            };
+
+            screenShot.Save($@"{ScreenShotFolderName.Text}\{ItemName.Text}_{i}.png", func);
+        }
+
+        private bool Near(byte c1, byte c2, byte dif = 5)
+        {
+            return c1 >= c2 - dif && c1 <= c2 + dif;
         }
     }
 }

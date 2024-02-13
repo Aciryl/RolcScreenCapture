@@ -22,77 +22,170 @@
 //  THE SOFTWARE.
 -->
     
-<Window x:Class="WPFCaptureSample.MainWindow"
+<controls:MetroWindow x:Class="WPFCaptureSample.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:WPFCaptureSample"
         mc:Ignorable="d"
-        Title="WPF Capture Sample" Height="900" Width="1600"
-        Loaded="Window_Loaded">
+        d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
+        Title="Rolc Window Capture" Height="900" Width="1600"
+        Loaded="Window_Loaded"
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="330" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <Grid x:Name="ControlsGrid" Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <StackPanel Margin="10">
-                <TextBlock Text="Main" />
-                <!--Button x:Name="PickerButton1" Content="Use Picker" Click="PickerButton1_Click" Margin="10" /-->
-                <ComboBox x:Name="WindowComboBox1" Margin="10" SelectionChanged="WindowComboBox1_SelectionChanged" Focusable="False">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Title}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                
-                <TextBlock Text="Sub1" />
-                <!--Button x:Name="PickerButton2" Content="Use Picker" Click="PickerButton2_Click" Margin="10" /-->
-                <ComboBox x:Name="WindowComboBox2" Margin="10" SelectionChanged="WindowComboBox2_SelectionChanged" Focusable="False">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Title}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+        <TabControl Grid.Column="0" >
+            <TabItem Header="Window" FocusVisualStyle="{x:Null}">
+                <Grid x:Name="ControlsGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Margin="10">
+                        <TextBlock Text="Main" />
+                        <!--Button x:Name="PickerButton1" Content="Use Picker" Click="PickerButton1_Click" Margin="10" /-->
+                        <ComboBox x:Name="WindowComboBox1" Margin="10" SelectionChanged="WindowComboBox1_SelectionChanged" Focusable="False">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Title}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                <TextBlock Text="Sub2" />
-                <!--Button x:Name="PickerButton3" Content="Use Picker" Click="PickerButton3_Click" Margin="10" /-->
-                <ComboBox x:Name="WindowComboBox3" Margin="10" SelectionChanged="WindowComboBox3_SelectionChanged" Focusable="False">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Title}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <!--Button x:Name="PrimaryMonitorButton" Content="Use Primary Monitor" Click="PrimaryMonitorButton_Click" Margin="10" />
-                <ComboBox x:Name="MonitorComboBox" Margin="10" SelectionChanged="MonitorComboBox_SelectionChanged">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DeviceName}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox-->
-            </StackPanel>
+                        <TextBlock Text="Sub1" />
+                        <!--Button x:Name="PickerButton2" Content="Use Picker" Click="PickerButton2_Click" Margin="10" /-->
+                        <ComboBox x:Name="WindowComboBox2" Margin="10" SelectionChanged="WindowComboBox2_SelectionChanged" Focusable="False">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Title}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-            <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10">
-                <Button x:Name="MappingStart" Content="Mapping Start" Click="MappingStart_Click" Margin="10" Focusable="False" />
-                <Button x:Name="MappingStop" Content="Mapping Stop" Click="MappingStop_Click"  Margin="10" Focusable="False" />
-                <Button x:Name="MacroStartButton" Content="Macro Start" Click="MacroStartButton_Click" Margin="10" Focusable="False" />
-                <Button x:Name="RefreshButton"  Content="Refresh Windows" Click="RefreshButton_Click"  Margin="10" Focusable="False" />
-                <Button x:Name="StopButton" Content="Stop Capturing" Click="StopButton_Click" Margin="10" Focusable="False" />
-            </StackPanel>
-        </Grid>
+                        <TextBlock Text="Sub2" />
+                        <!--Button x:Name="PickerButton3" Content="Use Picker" Click="PickerButton3_Click" Margin="10" /-->
+                        <ComboBox x:Name="WindowComboBox3" Margin="10" SelectionChanged="WindowComboBox3_SelectionChanged" Focusable="False">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Title}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <!--Button x:Name="PrimaryMonitorButton" Content="Use Primary Monitor" Click="PrimaryMonitorButton_Click" Margin="10" />
+        <ComboBox x:Name="MonitorComboBox" Margin="10" SelectionChanged="MonitorComboBox_SelectionChanged">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DeviceName}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox-->
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10">
+                        <Button x:Name="RefreshButton"  Content="Refresh Windows" Click="RefreshButton_Click"  Margin="10" Focusable="False" />
+                        <Button x:Name="StopButton" Content="Stop Capturing" Click="StopButton_Click" Margin="10" Focusable="False" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="ScreenShot" FocusVisualStyle="{x:Null}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="10">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="SelectFolder" Click="SelectFolder_Click"  Content="フォルダー選択" Margin="10" Focusable="False" />
+                            <Button x:Name="SaveScreenShot" Click="SaveScreenShot_Click" Content="撮影" Margin="10" Focusable="False" />
+                            <Button x:Name="LoadScreenShot" Click="LoadScreenShot_Click"  Content="読み込み" Margin="10" Focusable="False" />
+                        </StackPanel>
+                        <TextBox x:Name="ScreenShotFolderName" FontSize="19" materialDesign:HintAssist.Hint="フォルダー名" IsReadOnly="True" Margin="10" />
+                        <TextBox x:Name="ItemName" FontSize="18" materialDesign:HintAssist.Hint="アイテム名" materialDesign:TextFieldAssist.HasClearButton="True" Margin="10" />
+                        <StackPanel Orientation="Horizontal" >
+                            <CheckBox x:Name="ScreenShotFree" Content="フリー" FontSize="18" Margin="10" Focusable="False" IsChecked="True" />
+                            <CheckBox x:Name="ScreenShotShare" Content="シェア" FontSize="18" Margin="10" Focusable="False" />
+                            <CheckBox x:Name="ScreenShotShield" Content="シールド" FontSize="18" Margin="10" Focusable="False" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <CheckBox x:Name="ScreenShotShareShield" Content="シェアシールド" FontSize="18" Margin="10" Focusable="False" />
+                        </StackPanel>
+                        <TabControl ItemsSource="{Binding TabItems}">
+                            <TabControl.ItemContainerStyle>
+                                <Style TargetType="TabItem" BasedOn="{StaticResource MaterialDesignTabItem}">
+                                    <Setter Property="Header" Value="{Binding Name}" />
+                                </Style>
+                            </TabControl.ItemContainerStyle>
+
+                            <TabControl.ContentTemplate>
+                                <DataTemplate>
+                                    <ListBox ItemsSource="{Binding Items}"
+                                             Height="400"
+                                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                             ScrollViewer.CanContentScroll="False">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate>
+                                                            <Grid Margin="10, 0">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0" Text="{Binding ItemName}" FontSize="18" VerticalAlignment="Center"/>
+                                                                <ComboBox Grid.Column="1" ItemsSource="{Binding ItemsSource}" SelectedItem="{Binding SelectedItem.Value, Mode=TwoWay}" FontSize="18" />
+                                                            </Grid>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </DataTemplate>
+                            </TabControl.ContentTemplate>
+                        </TabControl>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10">
+                        
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Macro" FocusVisualStyle="{x:Null}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Margin="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions >
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="魔宮結束" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            <ToggleButton x:Name="MaqMacroButton" FontSize="18" Grid.Column="1" Checked="MaqMacroButton_Checked" Unchecked="MaqMacroButton_Unchecked" Margin="10" Focusable="False" />
+                        </Grid>
+                        
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10">
+                        <Button x:Name="MappingStart" Content="Mapping Start" Click="MappingStart_Click" Margin="10" Focusable="False" />
+                        <Button x:Name="MappingStop" Content="Mapping Stop" Click="MappingStop_Click"  Margin="10" Focusable="False" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
         <Grid Grid.Column="1">
             <Rectangle Fill="WhiteSmoke" />
         </Grid>
     </Grid>
-</Window>
+</controls:MetroWindow>

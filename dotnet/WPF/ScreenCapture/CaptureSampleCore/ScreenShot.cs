@@ -34,7 +34,7 @@ namespace CaptureSampleCore
             TextureHeight = texture.Description.Height;
             ClientWidth = texture.Description.Width - Left - Right;
             ClientHeight = TextureHeight - Top - Bottom;
-            colors = GetColorDataFromTexture(texture);
+            SetColorDataFromTexture(texture);
             UpdateEvent?.Invoke();
         }
 
@@ -45,6 +45,25 @@ namespace CaptureSampleCore
                     colors[index + 1],
                     colors[index + 0],
                     colors[index + 3]);
+        }
+
+        // Bitmapオブジェクトをbyte配列に変換
+        public static (byte[] colors, int width, int height) BitmapToBytes(string path)
+        {
+            var src = new Bitmap(path);
+
+            var bmpData = src.LockBits(
+                new Rectangle(0, 0, src.Width, src.Height),
+                ImageLockMode.ReadOnly,
+                src.PixelFormat);
+
+            byte[] bytes = new byte[Math.Abs(bmpData.Stride) * src.Height];
+
+            Marshal.Copy(bmpData.Scan0, bytes, 0, bytes.Length);
+
+            src.UnlockBits(bmpData);
+
+            return (bytes, src.Width, src.Height);
         }
 
         public void Save(string filename, Func<(byte r, byte g, byte b, byte a), (byte r, byte g, byte b, byte a)> func = null)
@@ -71,15 +90,15 @@ namespace CaptureSampleCore
                     {
                         //var index = (y * textureWidth + x) * 4;
                         var index = GetIndex(x, y);
-                        var b = colors[index + 0];
+                        var r = colors[index + 0];
                         var g = colors[index + 1];
-                        var r = colors[index + 2];
+                        var b = colors[index + 2];
                         var a = colors[index + 3];
 
                         (byte pr, byte pg, byte pb, byte pa) = func?.Invoke((r, g, b, a)) ?? (r, g, b, a);
-                        pixels[index2 + 0] = pb;
+                        pixels[index2 + 0] = pr;
                         pixels[index2 + 1] = pg;
-                        pixels[index2 + 2] = pr;
+                        pixels[index2 + 2] = pb;
                         pixels[index2 + 3] = pa;
 
                         index2 += 4;
@@ -106,7 +125,8 @@ namespace CaptureSampleCore
             return ((y + Top) * TextureWidth + (x + Left)) * 4;
         }
 
-        private byte[] GetColorDataFromTexture(Texture2D texture)
+        private int prevWidth, prevHeight;
+        private void SetColorDataFromTexture(Texture2D texture)
         {
             // Create our staging texture
             var description = new Texture2DDescription
@@ -149,15 +169,17 @@ namespace CaptureSampleCore
 
                 // カラーデータを格納する配列
                 //byte[,,] colors = new byte[height - top - left, width - left * 2, 4];
-                byte[] rawColors = new byte[height * width * 4];
+                if (width != prevWidth || height != prevHeight)
+                    colors = new byte[height * width * 4];
+
+                prevWidth = width;
+                prevHeight = height;
 
                 // ポインタから1次元配列へコピー
-                Marshal.Copy(dataBox.DataPointer, rawColors, 0, rawColors.Length);
+                Marshal.Copy(dataBox.DataPointer, colors, 0, colors.Length);
 
                 // マップ解除
                 deviceContext.UnmapSubresource(texture, 0);
-
-                return rawColors;
             }
         }
 

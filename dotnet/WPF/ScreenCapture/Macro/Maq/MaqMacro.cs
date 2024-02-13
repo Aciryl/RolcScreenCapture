@@ -11,7 +11,7 @@ namespace Macro.Maq
 {
     public abstract class MaqMacro : Macro
     {
-        private Manager Manager { get; }
+        protected Manager Manager { get; }
 
         public MaqMacro(IntPtr hwnd,
                         Dictionary<Key, VirtualKeyCode> keyList,
@@ -21,8 +21,9 @@ namespace Macro.Maq
                         ScreenShot screenShot,
                         double lf,
                         double rf,
-                        Manager manager)
-            : base(hwnd, keyList, getState, setState, setMessage, screenShot, lf, rf, manager)
+                        Manager manager,
+                        int id)
+            : base(hwnd, keyList, getState, setState, setMessage, screenShot, lf, rf, manager, id)
         {
             Manager = manager;
         }

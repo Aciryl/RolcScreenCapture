@@ -69,7 +69,7 @@ namespace CaptureSampleCore
 
                 contents[i] = compositor.CreateSpriteVisual();
                 contents[i].AnchorPoint = new Vector2(i == 0 || i == 2 ? 0.5f + 0.02f : -0.02f,
-                                                      i == 0 || i == 1 ? 0.5f + 0.02f / 9 * 16 : -0.02f / 9 * 16);
+                                                      i == 0 || i == 1 ? 0.5f : -0.02f / 9 * 16);
                 contents[i].RelativeOffsetAdjustment = new Vector3(0.5f, 0.5f, 0);
                 contents[i].RelativeSizeAdjustment = Vector2.One;
                 contents[i].Size = new Vector2(-80, -80);

@@ -20,6 +20,5 @@ namespace Macro
         public static States LobbyMove { get; } = new States();
         public static States Ready { get; } = new States();
         public static States Error { get; } = new States();
-        public static States Restart { get; } = new States();
     }
 }

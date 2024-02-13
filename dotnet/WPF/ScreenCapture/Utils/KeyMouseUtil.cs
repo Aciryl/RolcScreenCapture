@@ -16,6 +16,9 @@ namespace Utils
 
         private const int MAPVK_VK_TO_VSC = 0;
 
+        private const int KEYEVENTF_KEYDOWN = 0x0000;
+        private const int KEYEVENTF_KEYUP = 0x0002;
+
         [DllImport("user32.dll")]
         private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
@@ -26,7 +29,10 @@ namespace Utils
         private static extern int MapVirtualKey(int wCode, int wMapType);
 
         [DllImport("user32.dll", SetLastError = true)]
-        private extern static void SendInput(int nInputs, Input[] pInputs, int cbsize);
+        private static extern void SendInput(int nInputs, Input[] pInputs, int cbsize);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern void keybd_event(int bVk, int bScan, uint dwFlags, IntPtr dwExtraInfo);
 
         [StructLayout(LayoutKind.Sequential)]
         struct Input
@@ -90,12 +96,50 @@ namespace Utils
         private const int MOUSEEVENTF_RIGHTDOWN = 0x0008;
         private const int MOUSEEVENTF_RIGHTUP = 0x0010;
 
+        public static void SendKey(int vKey, int time = 0)
+        {
+            //var vKey = KeyInterop.VirtualKeyFromKey(key);
+            var vsc = MapVirtualKey(vKey, MAPVK_VK_TO_VSC);
+
+            keybd_event(vKey, vsc, KEYEVENTF_KEYDOWN, IntPtr.Zero);
+            Thread.Sleep(time);
+            keybd_event(vKey, vsc, KEYEVENTF_KEYUP, IntPtr.Zero);
+        }
+
         public static void SendKey(IntPtr hwnd, Key key)
         {
             var vKey = KeyInterop.VirtualKeyFromKey(key);
-            int vsc = MapVirtualKey(vKey, MAPVK_VK_TO_VSC);
+            var vsc = MapVirtualKey(vKey, MAPVK_VK_TO_VSC);
 
-            PostMessage(hwnd, WM_KEYDOWN, (IntPtr)vKey, (IntPtr)((vsc << 16) | 1));
+            SendMessage(hwnd, WM_KEYDOWN, (IntPtr)vKey, (IntPtr)((vsc << 16) | 1));
+            PostMessage(hwnd, WM_KEYUP, (IntPtr)vKey, (IntPtr)((vsc << 16) | 0));
+        }
+
+        public static void KeyDown(int vKey)
+        {
+            var vsc = MapVirtualKey(vKey, MAPVK_VK_TO_VSC);
+            keybd_event(vKey, vsc, KEYEVENTF_KEYDOWN, IntPtr.Zero);
+        }
+
+        public static void KeyUp(int vKey)
+        {
+            var vsc = MapVirtualKey(vKey, MAPVK_VK_TO_VSC);
+            keybd_event(vKey, vsc, KEYEVENTF_KEYUP, IntPtr.Zero);
+        }
+
+        public static void KeyDown(IntPtr hwnd, Key key)
+        {
+            var vKey = KeyInterop.VirtualKeyFromKey(key);
+            var vsc = MapVirtualKey(vKey, MAPVK_VK_TO_VSC);
+
+            SendMessage(hwnd, WM_KEYDOWN, (IntPtr)vKey, (IntPtr)((vsc << 16) | 1));
+        }
+
+        public static void KeyUp(IntPtr hwnd, Key key)
+        {
+            var vKey = KeyInterop.VirtualKeyFromKey(key);
+            var vsc = MapVirtualKey(vKey, MAPVK_VK_TO_VSC);
+
             PostMessage(hwnd, WM_KEYUP, (IntPtr)vKey, (IntPtr)((vsc << 16) | 0));
         }
 
